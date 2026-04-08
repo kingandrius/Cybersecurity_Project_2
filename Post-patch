@@ -1,0 +1,33 @@
+const express = require('express');
+const mysql = require('mysql2');
+const app = express();
+app.use(express.json());
+
+const connection = mysql.createConnection({
+    host: '192.168.1.30',
+    user: 'root',
+    password: 'password',
+    database: 'staff_portal'
+});
+
+app.post('/auth', (req, res) => {
+    const { username, password } = req.body;
+    
+    // PATCHED CODE - PARAMETERIZED QUERY
+    const query = "SELECT * FROM users WHERE username = ? AND password = ?";
+    
+    console.log("Executing Secure Query...");
+
+    connection.query(query, [username, password], (err, results) => {
+        if (err) throw err;
+        if (results.length > 0) {
+            res.send("Welcome, " + results[0].username + "!");
+        } else {
+            res.send("Access Denied.");
+        }
+    });
+});
+
+app.listen(3000, () => {
+    console.log("SECURE Authentication service running on port 3000");
+});
